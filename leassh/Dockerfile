@@ -19,7 +19,7 @@ RUN chmod a+x /run.sh \
         *) echo "unsupported arch $TARGETARCH"; exit 1 ;; \
       esac; \
       curl -fsSL -o /tmp/leassh.tar.gz \
-        "https://github.com/cgoberg/leassh/releases/download/v${LEASSH_VERSION}/${ASSET}.tar.gz" \
+        "https://github.com/cgoberg/releases/releases/download/v${LEASSH_VERSION}/${ASSET}.tar.gz" \
       && tar xzf /tmp/leassh.tar.gz -C /tmp \
       && find /tmp -name leassh -type f -exec cp {} /usr/local/bin/leassh \; \
       && chmod a+x /usr/local/bin/leassh \
