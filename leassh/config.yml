@@ -31,7 +31,7 @@ schema:
       reclaim_idle_sessions: bool?
       reclaim_abandoned_apps: bool?
   auto_install_integration: bool
-image: ghcr.io/cgoberg/leassh-addon-{arch}
+# image: ghcr.io/cgoberg/leassh-addon-{arch}  # re-enable when GHCR visibility is public
 ports:
   8790/tcp: 8790
 panel_icon: mdi:shield-home
