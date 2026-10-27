@@ -1,0 +1,6 @@
+build_from:
+  amd64: debian:bookworm-slim
+  aarch64: debian:bookworm-slim
+squash: false
+args:
+  LEASSH_VERSION: "0.2.0"

@@ -1,0 +1,38 @@
+name: Leassh
+version: 0.2.0
+slug: leassh
+description: SSH fleet monitoring & family safety — the Leassh server as an add-on. Pairs automatically with the Leassh Home Assistant integration.
+url: https://github.com/cgoberg/leassh-addon
+arch:
+  - amd64
+  - aarch64
+init: false
+startup: services
+boot: auto
+hassio_api: false
+homeassistant_api: false
+host_network: true
+map:
+  - config:rw
+  - ssl:ro
+options:
+  license_token: ""
+  api_listen_port: 8790
+  nodes: []
+  auto_install_integration: true
+schema:
+  license_token: str
+  api_listen_port: port
+  nodes:
+    - name: str
+      host: str
+      ssh: str
+      os: list(linux|windows|macos)?
+      reclaim_idle_sessions: bool?
+      reclaim_abandoned_apps: bool?
+  auto_install_integration: bool
+image: ghcr.io/cgoberg/leassh-addon-{arch}
+ports:
+  8790/tcp: 8790
+panel_icon: mdi:shield-home
+panel_title: Leassh
