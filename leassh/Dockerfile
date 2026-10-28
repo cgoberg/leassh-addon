@@ -8,7 +8,7 @@ ARG LEASSH_VERSION=0.2.1
 # The HA integration is fetched from its own repository at a pinned tag.
 # It used to be committed under rootfs/opt/leassh-integration, where it
 # silently rotted at 0.1.0 while the integration repo was at 0.3.2.
-ARG INTEGRATION_VERSION=0.3.6
+ARG INTEGRATION_VERSION=0.3.7
 
 ENV DEBIAN_FRONTEND=noninteractive
 
