@@ -1,4 +1,5 @@
-# Debian base, deliberately hardcoded.
+# Debian trixie: the release binaries are linked against glibc 2.38+
+# (built on Ubuntu 24.04), which bookworm's 2.36 cannot satisfy.
 #
 # The release binaries are dynamically linked against glibc
 # (/lib64/ld-linux-x86-64.so.2). Supervisor injects
@@ -10,7 +11,7 @@
 # This also means bashio is unavailable, so run.sh uses jq on
 # /data/options.json instead. build.yaml is deprecated and not read by
 # current Supervisor; its parameters live here now.
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 ARG TARGETARCH
 ARG LEASSH_VERSION=0.2.0
