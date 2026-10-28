@@ -33,7 +33,7 @@ jobs:
         run: bash -n leassh/rootfs/run.sh
       - name: Dockerfile pins a released version
         run: |
-          grep -q 'ARG LEASSH_VERSION=0.2.1' leassh/Dockerfile
+          grep -q "ARG LEASSH_VERSION=0.2.2" leassh/Dockerfile
           grep -q 'ARG INTEGRATION_VERSION=' leassh/Dockerfile
       - name: Packaging test (static)
         run: |
