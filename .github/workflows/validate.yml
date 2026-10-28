@@ -1,0 +1,36 @@
+name: Validate add-on
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate repository.yaml and config.yml
+        run: |
+          python3 - <<'PY'
+          import sys, yaml
+          repo = yaml.safe_load(open("repository.yaml"))
+          assert repo.get("name"), "repository.yaml: name is required"
+          assert repo.get("url"), "repository.yaml: url is required"
+          cfg = yaml.safe_load(open("leassh/config.yml"))
+          for key in ("name", "version", "slug", "description", "arch", "options", "schema"):
+              assert key in cfg, f"config.yml: missing {key}"
+          assert cfg["slug"] == "leassh", "slug must stay 'leassh'"
+          assert isinstance(cfg["arch"], list) and cfg["arch"], "arch must be a list"
+          for arch in cfg["arch"]:
+              assert arch in ("amd64", "aarch64", "armv7", "armhf", "i386"), arch
+          print("ok:", cfg["name"], cfg["version"], cfg["arch"])
+          PY
+      - name: Shell syntax
+        run: bash -n leassh/rootfs/run.sh
+      - name: Dockerfile pins a released version
+        run: |
+          grep -q 'ARG LEASSH_VERSION=0.2.1' leassh/Dockerfile
+          grep -q 'ARG INTEGRATION_VERSION=' leassh/Dockerfile
