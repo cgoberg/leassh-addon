@@ -35,6 +35,10 @@ if [[ ! -s "$TOKEN_FILE" ]]; then
 fi
 ha_token="$(cat "$TOKEN_FILE")"
 
+if [[ -z "$license_token" ]]; then
+  log_notice "WARNING: license_token is empty. Get a Free key (2 nodes, Home Assistant included) at https://leassh.com/setup, then paste it here. The server will reject an empty license."
+fi
+
 # --- fleet.yaml from options ----------------------------------------------
 nodes_block="$(jq -r '
   (.nodes // [])[]
@@ -78,5 +82,7 @@ fi
 
 log_info "Leassh server starting on port ${listen_port} (mDNS _leassh._tcp advertised)"
 log_notice "HA pairing token: ${ha_token}"
+log_info "Free plan: 2 nodes, local dashboard, Home Assistant, one ha token. Paid plans: Family 10, Pro 25, Unlimited contact."
+log_info "Working directory persists at ${CONF_DIR} (license cache and screen-time data survive restarts)."
 
 exec /usr/local/bin/leassh "$FLEET"

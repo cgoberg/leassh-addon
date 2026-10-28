@@ -35,3 +35,7 @@ jobs:
         run: |
           grep -q 'ARG LEASSH_VERSION=0.2.1' leassh/Dockerfile
           grep -q 'ARG INTEGRATION_VERSION=' leassh/Dockerfile
+      - name: Packaging test (static)
+        run: |
+          chmod +x scripts/packaging-test.sh
+          ./scripts/packaging-test.sh

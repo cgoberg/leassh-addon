@@ -25,20 +25,41 @@ No shell, no YAML editing on the host.
 
 | Option | Meaning |
 |---|---|
-| `license_token` | Offline license token (LSH1.…). Free tier: 2 nodes. |
+| `license_token` | Online `LSH-…` key or offline `LSH1.…` token. Free covers 2 nodes, Home Assistant, sensors, presence, notify, Assist, basic alerts and one `ha` token. Family 10, Pro 25, Unlimited contact. Get a Free key at <https://leassh.com/setup>. |
 | `api_listen_port` | HTTP+WS API port (default 8790) |
 | `nodes` | Fleet node list (name/host/ssh/os, optional reclamation opt-ins) |
 | `auto_install_integration` | Keep the co-located integration installed (default on) |
+
+## Free, Family, Pro and Home Assistant
+
+Home Assistant is included on **every** plan, including Free.
+
+- **Free:** 2 nodes, local dashboard, HA integration, sensors, binary sensors,
+  presence, curated buttons, notify, Assist, basic alerts, exactly one `ha`
+  API token. No card required.
+- **Family:** 10 nodes, plus AI screen analysis, weekly reports, screen time,
+  limits/enforcement, content alerts, and Telegram/email channels.
+- **Pro:** 25 nodes, plus fleet dashboard, rules, webhooks, MQTT, SSH actuation,
+  full REST API and OpenClaw.
+- **Unlimited:** unlimited nodes, priority support, multi-site onboarding.
+
+Using Home Assistant and OpenClaw at the same time requires Family or Pro
+because Free carries one API token. A third node on Free is rejected with
+`NODE_LIMIT_REACHED`; existing nodes keep reporting if a downgrade leaves the
+fleet over the limit.
+
+The add-on writes its working directory to `/config/leassh`, so
+`data/license_cache.json` and `screen_time_data.json` survive restarts. It
+generates exactly one `ha` API token and keeps it stable across restarts.
 
 ## Closed-tier boundary
 
 This public repository and its images carry **no closed-tier assets**.
 `scripts/exclude-check.sh` runs in every packaging step and fails the
-build on any violation. The free tier includes monitoring, sensors,
-basic actions, Assist exposure, notifications, and one API token.
+build on any violation.
 
 ## Support
 
 Issues: https://github.com/cgoberg/leassh-addon/issues ·
-Integration: https://github.com/cgoberg/leassh-hacs ·
+Integration: https://github.com/cgoberg/leassh-integration ·
 Docs: https://leassh.com

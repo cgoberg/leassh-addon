@@ -1,0 +1,21 @@
+configuration:
+  license_token:
+    name: Leassh license token
+    description: >-
+      Paste an online LSH-… key or an offline LSH1.… token. Free covers 2 nodes,
+      the local dashboard, Home Assistant, sensors, presence, notify, Assist,
+      basic alerts and one ha API token. Get a Free key at https://leassh.com/setup.
+      Family covers 10 nodes; Pro covers 25; Unlimited is contact-only.
+  api_listen_port:
+    name: API port
+    description: HTTP + WebSocket API port. Default 8790.
+  nodes:
+    name: Fleet nodes
+    description: >-
+      Computers to monitor (name, host, ssh, os). Each computer counts once.
+      Free allows 2; a third node is rejected until you remove one or upgrade.
+  auto_install_integration:
+    name: Install the Home Assistant integration
+    description: >-
+      Keep the co-located Leassh integration installed in /config/custom_components/leassh.
+      The add-on pairs with one ha-scoped API token; Home Assistant is included on every plan.

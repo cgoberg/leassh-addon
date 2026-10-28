@@ -1,7 +1,7 @@
 name: Leassh
-version: 0.2.8
+version: 0.2.9
 slug: leassh
-description: SSH fleet monitoring & family safety — the Leassh server as an add-on. Pairs automatically with the Leassh Home Assistant integration.
+description: Leassh server add-on — local-first computer monitoring, Home Assistant included. Free covers 2 nodes; paid plans add AI reports, limits, rules and fleet controls.
 url: https://github.com/cgoberg/leassh-addon
 arch:
   - amd64
