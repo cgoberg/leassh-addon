@@ -1,15 +1,23 @@
-# Local-build variant (supervisor builds on device). The multi-arch CI
-# image (private GHCR until visibility flips) copies a prebuilt binary
-# into rootfs/usr/local/bin instead; both paths ship the same artifact.
-ARG BUILD_FROM=debian:bookworm-slim
+# Built by Supervisor on device when a prebuilt CI image is not configured.
+#
+# Base is the Home Assistant app base. run.sh depends on bashio and
+# with-contenv, which only exist there — an earlier Debian base could not
+# have worked at runtime.
+#
+# build.yaml is deprecated and, on current Supervisor, not read at all: the
+# builder silently fell back to this same base while the Dockerfile still
+# assumed Debian, so `apt-get` failed with exit 127. The parameters now live
+# here, which is what the deprecation asks for.
+ARG BUILD_FROM=ghcr.io/home-assistant/base:latest
 FROM ${BUILD_FROM}
+
 ARG TARGETARCH
 ARG LEASSH_VERSION=0.2.0
-ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y --no-install-recommends \
-      ca-certificates bash curl xz-utils \
-    && rm -rf /var/lib/apt/lists/*
+
+RUN apk add --no-cache ca-certificates bash curl xz
+
 COPY rootfs /
+
 RUN chmod a+x /run.sh \
  && mkdir -p /usr/local/bin \
  && if [ ! -x /usr/local/bin/leassh ]; then \
@@ -25,4 +33,5 @@ RUN chmod a+x /run.sh \
       && chmod a+x /usr/local/bin/leassh \
       && rm -rf /tmp/leassh*; \
     fi
+
 CMD [ "/run.sh" ]
