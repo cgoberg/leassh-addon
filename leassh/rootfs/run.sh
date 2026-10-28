@@ -1,9 +1,13 @@
-#!/usr/bin/with-contenv bashio
+#!/usr/bin/env bash
 # Leassh server add-on entrypoint.
 # - materializes fleet.yaml from options (persistent under /config/leassh)
 # - mints a pairing api token (shown once in the log; reuse if present)
 # - optionally installs the co-located HA integration into
 #   /config/custom_components/leassh (auto-pairing)
+#
+# No bashio: this image is Debian (glibc) because the release binaries are
+# dynamically linked. Options come from /data/options.json, which Supervisor
+# writes for every add-on, read here with jq.
 set -euo pipefail
 
 CONF_DIR="/config/leassh"
@@ -11,12 +15,18 @@ FLEET="$CONF_DIR/fleet.yaml"
 TOKEN_FILE="$CONF_DIR/ha_api_token"
 INTEGRATION_SRC="/opt/leassh-integration"
 INTEGRATION_DST="/config/custom_components/leassh"
+OPTIONS="/data/options.json"
+
+log_info() { echo "[$(date -u +%H:%M:%S)] INFO: $*"; }
+log_notice() { echo "[$(date -u +%H:%M:%S)] NOTICE: $*"; }
 
 mkdir -p "$CONF_DIR"
 
-license_token="$(bashio::config 'license_token')"
-listen_port="$(bashio::config 'api_listen_port')"
-auto_integration="$(bashio::config 'auto_install_integration')"
+opt() { jq -r --arg k "$1" '.[$k] // empty' "$OPTIONS"; }
+
+license_token="$(opt license_token)"
+listen_port="$(opt api_listen_port)"
+auto_integration="$(opt auto_install_integration)"
 
 # --- pairing token: mint once, keep stable across restarts ---------------
 if [[ ! -s "$TOKEN_FILE" ]]; then
@@ -26,19 +36,10 @@ fi
 ha_token="$(cat "$TOKEN_FILE")"
 
 # --- fleet.yaml from options ----------------------------------------------
-nodes_block=""
-count=$(bashio::config 'nodes|length')
-for ((i = 0; i < count; i++)); do
-  name="$(bashio::config "nodes[$i].name")"
-  host="$(bashio::config "nodes[$i].host")"
-  ssh="$(bashio::config "nodes[$i].ssh")"
-  os="$(bashio::config "nodes[$i].os" 2>/dev/null || echo linux)"
-  nodes_block+="  - name: ${name}
-    host: ${host}
-    ssh: ${ssh}
-    os: ${os}
-"
-done
+nodes_block="$(jq -r '
+  (.nodes // [])[]
+  | "  - name: \(.name)\n    host: \(.host)\n    ssh: \(.ssh)\n    os: \(.os // "linux")\n"
+' "$OPTIONS")"
 
 cat > "$FLEET" <<EOF
 license_key: "${license_token}"
@@ -48,7 +49,7 @@ api:
   tokens:
     ha: "${ha_token}"
 nodes:
-${nodes_block:-: []}
+${nodes_block:-  []}
 EOF
 chmod 600 "$FLEET"
 
@@ -57,11 +58,11 @@ if [[ "$auto_integration" == "true" && -d "$INTEGRATION_SRC" ]]; then
   mkdir -p /config/custom_components
   if [[ ! -d "$INTEGRATION_DST" ]]; then
     cp -r "$INTEGRATION_SRC" "$INTEGRATION_DST"
-    bashio::log.info "Leassh HA integration installed to custom_components — add the 'Leassh' integration and pair with this token."
+    log_info "Leassh HA integration installed to custom_components — add the 'Leassh' integration and pair with this token."
   fi
 fi
 
-bashio::log.info "Leassh server starting on port ${listen_port} (mDNS _leassh._tcp advertised)"
-bashio::log.notice "HA pairing token: ${ha_token}"
+log_info "Leassh server starting on port ${listen_port} (mDNS _leassh._tcp advertised)"
+log_notice "HA pairing token: ${ha_token}"
 
 exec /usr/local/bin/leassh "$FLEET"

@@ -1,20 +1,25 @@
-# Built by Supervisor on device when a prebuilt CI image is not configured.
+# Debian base, deliberately hardcoded.
 #
-# Base is the Home Assistant app base. run.sh depends on bashio and
-# with-contenv, which only exist there — an earlier Debian base could not
-# have worked at runtime.
+# The release binaries are dynamically linked against glibc
+# (/lib64/ld-linux-x86-64.so.2). Supervisor injects
+# BUILD_FROM=ghcr.io/home-assistant/base:latest when no build config is read,
+# and that base is Alpine/musl, where the binary fails with
+# "cannot execute: required file not found". Ignoring BUILD_FROM keeps the
+# glibc runtime the binary actually needs.
 #
-# build.yaml is deprecated and, on current Supervisor, not read at all: the
-# builder silently fell back to this same base while the Dockerfile still
-# assumed Debian, so `apt-get` failed with exit 127. The parameters now live
-# here, which is what the deprecation asks for.
-ARG BUILD_FROM=ghcr.io/home-assistant/base:latest
-FROM ${BUILD_FROM}
+# This also means bashio is unavailable, so run.sh uses jq on
+# /data/options.json instead. build.yaml is deprecated and not read by
+# current Supervisor; its parameters live here now.
+FROM debian:bookworm-slim
 
 ARG TARGETARCH
 ARG LEASSH_VERSION=0.2.0
 
-RUN apk add --no-cache ca-certificates bash curl xz
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ca-certificates bash curl xz-utils jq \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY rootfs /
 
