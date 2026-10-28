@@ -53,12 +53,26 @@ ${nodes_block:-  []}
 EOF
 chmod 600 "$FLEET"
 
-# --- auto-pairing: install the co-located integration --------------------
+# --- auto-pairing: install or update the vendored integration ------------
+# The integration is fetched at image build time (pinned tag), so the copy
+# here is authoritative. Compare versions instead of only checking presence:
+# an old install must be replaced, otherwise an upgrade keeps running stale
+# code forever.
+integration_version() {
+  jq -r '.version // "unknown"' "$1/manifest.json" 2>/dev/null || echo unknown
+}
+
 if [[ "$auto_integration" == "true" && -d "$INTEGRATION_SRC" ]]; then
   mkdir -p /config/custom_components
-  if [[ ! -d "$INTEGRATION_DST" ]]; then
+  src_ver="$(integration_version "$INTEGRATION_SRC")"
+  dst_ver=""
+  [[ -f "$INTEGRATION_DST/manifest.json" ]] && dst_ver="$(integration_version "$INTEGRATION_DST")"
+  if [[ "$src_ver" != "$dst_ver" ]]; then
+    rm -rf "$INTEGRATION_DST"
     cp -r "$INTEGRATION_SRC" "$INTEGRATION_DST"
-    log_info "Leassh HA integration installed to custom_components — add the 'Leassh' integration and pair with this token."
+    log_info "Leassh HA integration ${dst_ver:-absent} -> ${src_ver} in custom_components; restart Home Assistant to load it, then pair with this token."
+  else
+    log_info "Leassh HA integration ${src_ver} already current in custom_components"
   fi
 fi
 

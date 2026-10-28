@@ -1,20 +1,13 @@
 # Debian trixie: the release binaries are linked against glibc 2.38+
 # (built on Ubuntu 24.04), which bookworm's 2.36 cannot satisfy.
-#
-# The release binaries are dynamically linked against glibc
-# (/lib64/ld-linux-x86-64.so.2). Supervisor injects
-# BUILD_FROM=ghcr.io/home-assistant/base:latest when no build config is read,
-# and that base is Alpine/musl, where the binary fails with
-# "cannot execute: required file not found". Ignoring BUILD_FROM keeps the
-# glibc runtime the binary actually needs.
-#
-# This also means bashio is unavailable, so run.sh uses jq on
-# /data/options.json instead. build.yaml is deprecated and not read by
-# current Supervisor; its parameters live here now.
 FROM debian:trixie-slim
 
 ARG TARGETARCH
 ARG LEASSH_VERSION=0.2.0
+# The HA integration is fetched from its own repository at a pinned tag.
+# It used to be committed under rootfs/opt/leassh-integration, where it
+# silently rotted at 0.1.0 while the integration repo was at 0.3.2.
+ARG INTEGRATION_VERSION=0.3.2
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -23,6 +16,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY rootfs /
+
+RUN curl -fsSL -o /tmp/integration.tar.gz \
+      "https://github.com/cgoberg/leassh-integration/archive/refs/tags/v${INTEGRATION_VERSION}.tar.gz" \
+ && mkdir -p /opt/leassh-integration \
+ && tar xzf /tmp/integration.tar.gz -C /tmp \
+ && cp -r "/tmp/leassh-integration-${INTEGRATION_VERSION}/custom_components/leassh/." /opt/leassh-integration/ \
+ && rm -rf /tmp/integration.tar.gz "/tmp/leassh-integration-${INTEGRATION_VERSION}" \
+ && jq -e --arg v "$INTEGRATION_VERSION" '.version == $v' /opt/leassh-integration/manifest.json >/dev/null
 
 RUN chmod a+x /run.sh \
  && mkdir -p /usr/local/bin \
